@@ -76,14 +76,14 @@ func Capture(src, dst Pos) Pos {
 
 func init() {
 
-  // 01010101
-  // 10101010
-  // 01010101
-  // 10101010
-  // 01010101
-  // 10101010
-  // 01010101
-  // 10101010
+ 	// 01010101
+ 	// 10101010
+  	// 01010101
+  	// 10101010
+  	// 01010101
+  	// 10101010
+  	// 01010101
+  	// 10101010
 	// Initialize usable spaces
 	for y := 0; y < BOARD_DIM; y++ {
 		for x := (y + 1) % 2; x < BOARD_DIM; x += 2 {
@@ -91,10 +91,10 @@ func init() {
 		}
 	}
 
-  // Go에서 중첩된 맵에 접근, 할당을 시도하면 nil map 오류가 발생
-  // 사용 전에 외부 맵 각각에 내부 맵을 할당해야 함
-  // var Moves = map[Player]map[Pos]map[Pos]bool{}
-  // 즉, Moves[RED], Moves[BLACK] 할당
+  	// Go에서 중첩된 맵에 접근, 할당을 시도하면 nil map 오류가 발생
+  	// 사용 전에 외부 맵 각각에 내부 맵을 할당해야 함
+  	// var Moves = map[Player]map[Pos]map[Pos]bool{}
+  	// 즉, Moves[RED], Moves[BLACK] 할당
 	for _, p := range Players {
 		Moves[p] = map[Pos]map[Pos]bool{}
 		Jumps[p] = map[Pos]map[Pos]Pos{}
@@ -103,37 +103,37 @@ func init() {
   
 	for pos := range Usable {
 		// KingMoves = map[Pos]map[Pos]bool{
-    // KingMoves[true], KingMoves[false] 할당
-    KingMoves[pos] = map[Pos]bool{}
+    	// KingMoves[true], KingMoves[false] 할당
+    	KingMoves[pos] = map[Pos]bool{}
 		KingJumps[pos] = map[Pos]Pos{}
-    // 방향 좌(-1), 우(1)
+    	// 방향 좌(-1), 우(1)
 		var directions = []int{1, -1}
 		for i, player := range []Player{BLACK_PLAYER, RED_PLAYER} {
-      // Moves[Red][true], Moves[Red][false], Moves[BLACK][true], Moves[BLACK][false]
+      		// Moves[Red][true], Moves[Red][false], Moves[BLACK][true], Moves[BLACK][false]
 			Moves[player][pos] = map[Pos]bool{}
 			Jumps[player][pos] = map[Pos]Pos{}
 			// 이동(대각선으로만 이동)
-      movOff := 1
-      // 잡기
+      		movOff := 1
+      		// 잡기
 			jmpOff := 2
-      for _, direction := range directions {
+	      	for _, direction := range directions {
 				// 상하좌우 대각선 mov
-        mov := Pos{pos.X + (movOff * direction), pos.Y + (movOff * directions[i])}
+	        	mov := Pos{pos.X + (movOff * direction), pos.Y + (movOff * directions[i])}
 				// mov 위치가 움직일 수 있는 위치면
-        if Usable[mov] {
-          // 움직일 수 있는 위치 true로 변경
+	        	if Usable[mov] {
+	          		// 움직일 수 있는 위치 true로 변경
 					Moves[player][pos][mov] = true
-          // 킹은 방향에 상관없이 자유롭게 움직이므로 방향(player)은 관계없음
+	          		// 킹은 방향에 상관없이 자유롭게 움직이므로 방향(player)은 관계없음
 					KingMoves[pos][mov] = true
 				}
 
-        // 눈 목자로 잡는 위치들 mov
+		        // 눈 목자로 잡는 위치들 mov
 				jmp := Pos{pos.X + (jmpOff * direction), pos.Y + (jmpOff * directions[i])}
 				// 움직이는게 가능한 경우
-        if Usable[jmp] {
-          // capturePos의 좌표를 찾은 다음
+		        if Usable[jmp] {
+		          	// capturePos의 좌표를 찾은 다음
 					capturePos := Capture(pos, jmp)
-          // 잡히는 적의 말의 위치
+		          	// 점프했을 때 잡히는 적의 말의 위치 저장
 					Jumps[player][pos][jmp] = capturePos
 					KingJumps[pos][jmp] = capturePos
 				}
@@ -147,36 +147,49 @@ type Game struct {
 	Turn   Player
 }
 
+// 새 게임을 위한 인스턴스 생성
 func New() *Game {
+	// 말 mapping 초기화
 	pieces := make(map[Pos]Piece)
+	// 게임 인스턴스 초기화
 	game := &Game{pieces, BLACK_PLAYER}
+	// 말 생성
 	game.addInitialPieces()
 	return game
 }
 
 func (game *Game) addInitialPieces() {
 	for pos := range Usable {
+		// 흑은 위 3열
+		// 1, 2, 3
 		if pos.Y >= 0 && pos.Y < 3 {
 			game.Pieces[pos] = Piece{BLACK_PLAYER, false}
 		}
+		
+		// 백은 아래 3열
+		// 6, 7, 8
 		if pos.Y >= BOARD_DIM-3 && pos.Y < BOARD_DIM {
 			game.Pieces[pos] = Piece{RED_PLAYER, false}
 		}
 	}
 }
 
+// 해당 위치에 말이 있는지 체크
 func (game *Game) PieceAt(pos Pos) bool {
 	_, ok := game.Pieces[pos]
 	return ok
 }
 
+// 해당 플레이어의 턴인지 체크
 func (game *Game) TurnIs(player Player) bool {
 	return game.Turn == player
 }
 
+// 승패 결정
 func (game *Game) Winner() Player {
 	red_count := 0
 	black_count := 0
+	// 양 쪽의 말의 개수 세기
 	for _, piece := range game.Pieces {
 		switch {
 		case piece.Player == BLACK_PLAYER:
@@ -185,15 +198,20 @@ func (game *Game) Winner() Player {
 			red_count += 1
 		}
 	}
+	// 검정이 1개 이상이고 빨강이 없으면 검정 승리
 	if black_count > 0 && red_count <= 0 {
 		return BLACK_PLAYER
+	// 반대의 경우 빨강 승리
 	} else if red_count > 0 && black_count <= 0 {
 		return RED_PLAYER
 	}
+	// 아닌 경우 아무도 이기지 않았음
 	return NO_PLAYER
 }
 
+// 움직일 수 있는 위치인지 체크
 func (game *Game) ValidMove(src, dst Pos) bool {
+	// 기존 위치에 말이 없거나 목표 위치에 이미 말이 있다면 
 	if !game.PieceAt(src) || game.PieceAt(dst) {
 		return false
 	}
@@ -204,6 +222,7 @@ func (game *Game) ValidMove(src, dst Pos) bool {
 	return game.ValidJump(src, dst)
 }
 
+// 잡을 수 있는 위치인지 체크
 func (game *Game) ValidJump(src, dst Pos) bool {
 	if !game.PieceAt(src) || game.PieceAt(dst) {
 		return false
