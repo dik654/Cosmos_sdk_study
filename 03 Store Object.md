@@ -159,3 +159,7 @@ null을 허용하게 기본 설정되어있는 nextId에 초기값과 nullable�
 
 <img width="1764" alt="image" src="https://github.com/dik654/Cosmos_sdk_study/assets/33992354/ad2e6acc-b183-4507-9f21-c707ae99f574">
 
+이후 과정은 import하는 repo가 삭제되어 빌드가 되지않아 실제로 실행해보진 못했다
+<img width="1764" alt="image" src="https://github.com/dik654/Cosmos_sdk_study/assets/33992354/7e2b47f6-be25-4ab6-9848-fa2319b32f7e">
+
+
